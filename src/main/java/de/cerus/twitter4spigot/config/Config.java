@@ -45,12 +45,15 @@ public abstract class Config {
     public void load() {
         if(configuration.getKeys(true).isEmpty())
             setDefaults();
+        updateConfig();
         loadValues();
     }
 
     public abstract void loadValues();
 
     public abstract void setDefaults();
+
+    public abstract void updateConfig();
 
     public void save() {
         try {

@@ -28,6 +28,7 @@ import java.io.File;
 public class GeneralConfig extends Config {
 
     private boolean useMetrics;
+    private boolean useImageChests;
     private String twitterConsumerKey;
     private String twitterConsumerSecret;
     private String twitterAccessToken;
@@ -45,6 +46,7 @@ public class GeneralConfig extends Config {
     public void loadValues() {
         FileConfiguration configuration = getConfiguration();
         useMetrics = configuration.getBoolean("enable-metrics");
+        useImageChests = configuration.getBoolean("enable-image-chests");
         twitterConsumerKey = configuration.getString("twitter-consumer-key");
         twitterConsumerSecret = configuration.getString("twitter-consumer-secret");
         twitterAccessToken = configuration.getString("twitter-access-token");
@@ -60,6 +62,7 @@ public class GeneralConfig extends Config {
         FileConfiguration configuration = getConfiguration();
         configuration.options().header("You can create a Twitter app at https://developer.twitter.com/en/apps/create");
         configuration.set("enable-metrics", true);
+        configuration.set("enable-image-chests", true);
         configuration.set("twitter-consumer-key", "Change me");
         configuration.set("twitter-consumer-secret", "Change me");
         configuration.set("twitter-access-token", "Change me");
@@ -71,8 +74,24 @@ public class GeneralConfig extends Config {
         save();
     }
 
+    @Override
+    public void updateConfig() {
+        FileConfiguration configuration = getConfiguration();
+        boolean hasChanged = false;
+        if (!configuration.contains("enable-image-chests")) {
+            configuration.set("enable-image-chests", true);
+            hasChanged = true;
+        }
+        if (hasChanged)
+            save();
+    }
+
     public boolean useMetrics() {
         return useMetrics;
+    }
+
+    public boolean useImageChests() {
+        return useImageChests;
     }
 
     public String getTwitterConsumerKey() {

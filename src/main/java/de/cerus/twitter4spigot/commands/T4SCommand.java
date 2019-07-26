@@ -27,6 +27,9 @@ import de.cerus.ceruslib.commandframework.Command;
 import de.cerus.twitter4spigot.twitter.InformationHolder;
 import de.cerus.twitter4spigot.twitter.SubscriberController;
 import de.cerus.twitter4spigot.twitter.TwitterSubscriber;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -159,7 +162,7 @@ public class T4SCommand extends Command {
                     TwitterSubscriber subscriber = subscriberController.getSubscriber(id);
                     List<InformationHolder> informationHolders = subscriber.getInformationHolders();
                     informationHolders.add(new InformationHolder(informationHolders.size(), null,
-                            null, null, null, null));
+                            null, null, null, null, null));
                     subscriberController.save();
                     player.sendMessage(getPrefix() + "§aInformation Holder (#" + (informationHolders.size() - 1) + ") created!");
                     return true;
@@ -238,6 +241,16 @@ public class T4SCommand extends Command {
                         holder.setAuthorHolder(hologram);
                         subscriberController.save();
                         player.sendMessage(getPrefix()+"§aAuthor hologram set!");
+                        return true;
+                    }
+                    if(arguments.get(5).equalsIgnoreCase("setImageChest")) {
+                        Block block = player.getLocation().getBlock();
+                        block.setType(Material.CHEST);
+                        getPlugin().getServer().getScheduler().runTaskLater(getPlugin(), () -> {
+                            holder.setImageChest((Chest) block.getState());
+                            subscriberController.save();
+                            player.sendMessage(getPrefix()+"§aImage chest set!");
+                        }, 3);
                         return true;
                     }
 

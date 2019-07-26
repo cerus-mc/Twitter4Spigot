@@ -67,7 +67,7 @@ public class Twitter4Spigot extends CerusPlugin {
 
         SubscriberController subscriberController = new SubscriberController(twitterBot, subscriberStorage);
 
-        subscriberController.startLoop(this);
+        subscriberController.startLoop(this, generalConfig);
 
         MetricsUtil.setupMetrics(generalConfig, subscriberController);
 
