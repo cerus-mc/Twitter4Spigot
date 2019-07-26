@@ -24,19 +24,34 @@ import de.cerus.ceruslib.CerusPlugin;
 import de.cerus.twitter4spigot.bstats.MetricsUtil;
 import de.cerus.twitter4spigot.commands.T4SCommand;
 import de.cerus.twitter4spigot.config.GeneralConfig;
+import de.cerus.twitter4spigot.dependencies.DependencyRetriever;
 import de.cerus.twitter4spigot.storage.SubscriberStorage;
 import de.cerus.twitter4spigot.twitter.SubscriberController;
 import de.cerus.twitter4spigot.twitter.TwitterBot;
 import de.cerus.twitter4spigot.util.SkullValueUtil;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+
 public class Twitter4Spigot extends CerusPlugin {
     @Override
     public void onPluginEnable() {
+        DependencyRetriever dependencyRetriever = new DependencyRetriever();
+        try {
+            dependencyRetriever.retrieveDependencies();
+        } catch (NoSuchMethodException | MalformedURLException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+            System.out.println("Failed to retrieve dependencies");
+            return;
+        }
+
         GeneralConfig generalConfig = new GeneralConfig(this);
         generalConfig.initialize();
         generalConfig.load();
 
-        MetricsUtil.setupMetrics(generalConfig);
+        SubscriberStorage subscriberStorage = new SubscriberStorage();
+        subscriberStorage.initialize();
+        subscriberStorage.load();
 
         SkullValueUtil.initialize();
         getServer().getScheduler().runTaskAsynchronously(this, () -> SkullValueUtil.loadDefaults(generalConfig));
@@ -50,13 +65,11 @@ public class Twitter4Spigot extends CerusPlugin {
             return;
         }
 
-        SubscriberStorage subscriberStorage = new SubscriberStorage();
-        subscriberStorage.initialize();
-        subscriberStorage.load();
-
         SubscriberController subscriberController = new SubscriberController(twitterBot, subscriberStorage);
 
         subscriberController.startLoop(this);
+
+        MetricsUtil.setupMetrics(generalConfig, subscriberController);
 
         registerAll(new T4SCommand(this, subscriberController));
     }

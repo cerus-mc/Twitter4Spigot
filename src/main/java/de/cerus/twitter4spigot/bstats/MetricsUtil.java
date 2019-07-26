@@ -21,7 +21,12 @@
 package de.cerus.twitter4spigot.bstats;
 
 import de.cerus.twitter4spigot.config.GeneralConfig;
+import de.cerus.twitter4spigot.twitter.SubscriberController;
+import de.cerus.twitter4spigot.twitter.TwitterSubscriber;
 import org.bstats.bukkit.Metrics;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MetricsUtil {
 
@@ -31,8 +36,22 @@ public class MetricsUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static void setupMetrics(GeneralConfig generalConfig) {
+    public static void setupMetrics(GeneralConfig generalConfig, SubscriberController controller) {
         metrics = generalConfig.useMetrics() ? new Metrics(generalConfig.getPlugin()) : null;
+        if (!metricsAvailable()) return;
+
+        metrics.addCustomChart(new Metrics.AdvancedPie("most_used_mode", () -> {
+            Map<String, Integer> valueMap = new HashMap<>();
+            valueMap.put(TwitterSubscriber.Mode.USER_RECENT.toString(), Math.toIntExact(controller.getSubscribers()
+                    .stream().filter(subscriber -> subscriber.getMode() == TwitterSubscriber.Mode.USER_RECENT).count()));
+            valueMap.put(TwitterSubscriber.Mode.USER_POPULAR.toString(), Math.toIntExact(controller.getSubscribers()
+                    .stream().filter(subscriber -> subscriber.getMode() == TwitterSubscriber.Mode.USER_POPULAR).count()));
+            valueMap.put(TwitterSubscriber.Mode.HASHTAG_RECENT.toString(), Math.toIntExact(controller.getSubscribers()
+                    .stream().filter(subscriber -> subscriber.getMode() == TwitterSubscriber.Mode.HASHTAG_RECENT).count()));
+            valueMap.put(TwitterSubscriber.Mode.HASHTAG_POPULAR.toString(), Math.toIntExact(controller.getSubscribers()
+                    .stream().filter(subscriber -> subscriber.getMode() == TwitterSubscriber.Mode.HASHTAG_POPULAR).count()));
+            return valueMap;
+        }));
     }
 
     public static Metrics getMetrics() {

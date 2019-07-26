@@ -51,6 +51,9 @@ public class T4SCommand extends Command {
 
     @Override
     public boolean onPlayerCommand(Player player, org.bukkit.command.Command command, String s, Arguments arguments) {
+        if(!checkPermission(player, "t4s.use"))
+            return true;
+
         if (arguments.size() == 2) {
             if (arguments.get(0).equalsIgnoreCase("subscriber")) {
                 if (arguments.get(1).equalsIgnoreCase("list")) {
