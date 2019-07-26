@@ -1,0 +1,5 @@
+name: Twitter4Spigot
+author: Cerus
+main: de.cerus.twitter4spigot.Twitter4Spigot
+version: ${project.version}
+depend: [HolographicDisplays]
