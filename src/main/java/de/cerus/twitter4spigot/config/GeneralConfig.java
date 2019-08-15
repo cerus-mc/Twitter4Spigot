@@ -27,16 +27,9 @@ import java.io.File;
 
 public class GeneralConfig extends Config {
 
-    private boolean useMetrics;
-    private boolean useImageChests;
-    private String twitterConsumerKey;
-    private String twitterConsumerSecret;
-    private String twitterAccessToken;
-    private String twitterAccessSecret;
-    private String skullTextureTweet;
-    private String skullTextureLikes;
-    private String skullTextureRetweets;
-    private String skullTextureComments;
+    private boolean useMetrics, useImageChests, linkFormatting, hashtagFormatting, mentionFormatting;
+    private String twitterConsumerKey, twitterConsumerSecret, twitterAccessToken, twitterAccessSecret, skullTextureTweet,
+            skullTextureLikes, skullTextureRetweets, skullTextureComments, linkFormat, hashtagFormat, mentionFormat;
 
     public GeneralConfig(JavaPlugin plugin) {
         super(plugin, new File("plugins/Twitter4Spigot/config.yml"));
@@ -47,6 +40,9 @@ public class GeneralConfig extends Config {
         FileConfiguration configuration = getConfiguration();
         useMetrics = configuration.getBoolean("enable-metrics");
         useImageChests = configuration.getBoolean("enable-image-chests");
+        linkFormatting = configuration.getBoolean("formatting.links.enable");
+        hashtagFormatting = configuration.getBoolean("formatting.hashtags.enable");
+        mentionFormatting = configuration.getBoolean("formatting.mentions.enable");
         twitterConsumerKey = configuration.getString("twitter-consumer-key");
         twitterConsumerSecret = configuration.getString("twitter-consumer-secret");
         twitterAccessToken = configuration.getString("twitter-access-token");
@@ -55,6 +51,9 @@ public class GeneralConfig extends Config {
         skullTextureLikes = configuration.getString("skull-textures.like");
         skullTextureRetweets = configuration.getString("skull-textures.retweet");
         skullTextureComments = configuration.getString("skull-textures.comments");
+        linkFormat = configuration.getString("formatting.links.format");
+        hashtagFormat = configuration.getString("formatting.hashtags.format");
+        mentionFormat = configuration.getString("formatting.mentions.format");
     }
 
     @Override
@@ -71,6 +70,12 @@ public class GeneralConfig extends Config {
         configuration.set("skull-textures.like", "https://minecraft-heads.com/custom-heads/miscellaneous/18215-health-full");
         configuration.set("skull-textures.retweet", "https://minecraft-heads.com/custom-heads/miscellaneous/2359-repeat");
         configuration.set("skull-textures.comments", "https://minecraft-heads.com/custom-heads/miscellaneous/26112-speech-bubble");
+        configuration.set("formatting.links.enable", true);
+        configuration.set("formatting.links.format", "&3&n");
+        configuration.set("formatting.hashtags.enable", true);
+        configuration.set("formatting.hashtags.format", "&9");
+        configuration.set("formatting.mentions.enable", true);
+        configuration.set("formatting.mentions.format", "&b&n");
         save();
     }
 
@@ -80,6 +85,15 @@ public class GeneralConfig extends Config {
         boolean hasChanged = false;
         if (!configuration.contains("enable-image-chests")) {
             configuration.set("enable-image-chests", true);
+            hasChanged = true;
+        }
+        if (!configuration.contains("formatting")) {
+            configuration.set("formatting.links.enable", true);
+            configuration.set("formatting.links.format", "&3&n");
+            configuration.set("formatting.hashtags.enable", true);
+            configuration.set("formatting.hashtags.format", "&9");
+            configuration.set("formatting.mentions.enable", true);
+            configuration.set("formatting.mentions.format", "&b&n");
             hasChanged = true;
         }
         if (hasChanged)
@@ -124,5 +138,29 @@ public class GeneralConfig extends Config {
 
     public String getSkullTextureComments() {
         return skullTextureComments;
+    }
+
+    public boolean isLinkFormatting() {
+        return linkFormatting;
+    }
+
+    public boolean isHashtagFormatting() {
+        return hashtagFormatting;
+    }
+
+    public boolean isMentionFormatting() {
+        return mentionFormatting;
+    }
+
+    public String getLinkFormat() {
+        return linkFormat;
+    }
+
+    public String getHashtagFormat() {
+        return hashtagFormat;
+    }
+
+    public String getMentionFormat() {
+        return mentionFormat;
     }
 }

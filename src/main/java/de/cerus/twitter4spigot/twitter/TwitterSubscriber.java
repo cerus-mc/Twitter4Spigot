@@ -28,6 +28,7 @@ import de.cerus.twitter4spigot.config.GeneralConfig;
 import de.cerus.twitter4spigot.maprenderer.ImageRenderer;
 import de.cerus.twitter4spigot.util.SkullValueUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
@@ -129,13 +130,26 @@ public class TwitterSubscriber {
                 return;
         }
 
-        String tweet = status.getText();
+        String originalTweet = status.getText();
+        StringBuilder tweetBuilder = new StringBuilder();
+        for (String line : originalTweet.split(" ")) {
+            if (config.isLinkFormatting() && (line.startsWith("http://") || line.startsWith("https://")))
+                line = ChatColor.translateAlternateColorCodes('&', config.getLinkFormat()) + line;
+            if (config.isHashtagFormatting() && line.startsWith("#"))
+                line = ChatColor.translateAlternateColorCodes('&', config.getHashtagFormat()) + line;
+            if (config.isMentionFormatting() && line.startsWith("@"))
+                line = ChatColor.translateAlternateColorCodes('&', config.getMentionFormat()) + line;
+            tweetBuilder.append(line).append(" ");
+        }
+        String tweet = tweetBuilder.toString();
+
         List<String> lines = new ArrayList<>();
         if (tweet.length() > 30) {
             int index = 0;
             while (tweet.length() > index) {
-                int endIndex = tweet.length() < index + 30 ? tweet.length() : index + 30;
-                lines.add(tweet.substring(index, endIndex));
+                int endIndex = Math.min(tweet.length(), index + 30);
+                String line = tweet.substring(index, endIndex);
+                lines.add(line);
                 index += 30;
             }
         } else lines.add(tweet);
