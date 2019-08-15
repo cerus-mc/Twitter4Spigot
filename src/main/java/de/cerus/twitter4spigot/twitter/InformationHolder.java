@@ -25,6 +25,9 @@ import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.google.gson.JsonObject;
 import de.cerus.twitter4spigot.Twitter4Spigot;
 import de.cerus.twitter4spigot.util.JsonUtil;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 
 // Represents armorstands holding text
 public class InformationHolder {
@@ -35,14 +38,16 @@ public class InformationHolder {
     private Hologram retweetHolder;
     private Hologram commentHolder;
     private Hologram authorHolder;
+    private Chest imageChest;
 
-    public InformationHolder(int id, Hologram tweetHolder, Hologram likeHolder, Hologram retweetHolder, Hologram commentHolder, Hologram authorHolder) {
+    public InformationHolder(int id, Hologram tweetHolder, Hologram likeHolder, Hologram retweetHolder, Hologram commentHolder, Hologram authorHolder, Chest imageChest) {
         this.id = id;
         this.tweetHolder = tweetHolder;
         this.likeHolder = likeHolder;
         this.retweetHolder = retweetHolder;
         this.commentHolder = commentHolder;
         this.authorHolder = authorHolder;
+        this.imageChest = imageChest;
     }
 
     public JsonObject toJson() {
@@ -58,6 +63,8 @@ public class InformationHolder {
             object.add("comment-holder", JsonUtil.locationToJson(commentHolder.getLocation()));
         if (authorHolder != null)
             object.add("author-holder", JsonUtil.locationToJson(authorHolder.getLocation()));
+        if (imageChest != null)
+            object.add("image-chest", JsonUtil.locationToJson(imageChest.getLocation()));
         return object;
     }
 
@@ -74,7 +81,10 @@ public class InformationHolder {
                 HologramsAPI.createHologram(plugin, JsonUtil.jsonToLocation(object.get("comment-holder").getAsJsonObject())) : null;
         Hologram authorHolder = object.has("author-holder") ?
                 HologramsAPI.createHologram(plugin, JsonUtil.jsonToLocation(object.get("author-holder").getAsJsonObject())) : null;
-        return new InformationHolder(id, tweetHolder, likeHolder, retweetHolder, commentHolder, authorHolder);
+        Block chestBlock = object.has("image-chest") ?
+                JsonUtil.jsonToLocation(object.get("image-chest").getAsJsonObject()).getBlock() : null;
+        Chest chest = chestBlock != null && chestBlock.getState() instanceof Chest ? (Chest) chestBlock.getState() : null;
+        return new InformationHolder(id, tweetHolder, likeHolder, retweetHolder, commentHolder, authorHolder, chest);
     }
 
     public Hologram getTweetHolder() {
@@ -82,7 +92,7 @@ public class InformationHolder {
     }
 
     public void setTweetHolder(Hologram tweetHolder) {
-        if(this.tweetHolder != null)
+        if (this.tweetHolder != null)
             this.tweetHolder.delete();
         this.tweetHolder = tweetHolder;
     }
@@ -92,7 +102,7 @@ public class InformationHolder {
     }
 
     public void setLikeHolder(Hologram likeHolder) {
-        if(this.likeHolder != null)
+        if (this.likeHolder != null)
             this.likeHolder.delete();
         this.likeHolder = likeHolder;
     }
@@ -102,7 +112,7 @@ public class InformationHolder {
     }
 
     public void setRetweetHolder(Hologram retweetHolder) {
-        if(this.retweetHolder != null)
+        if (this.retweetHolder != null)
             this.retweetHolder.delete();
         this.retweetHolder = retweetHolder;
     }
@@ -112,7 +122,7 @@ public class InformationHolder {
     }
 
     public void setCommentHolder(Hologram commentHolder) {
-        if(this.commentHolder != null)
+        if (this.commentHolder != null)
             this.commentHolder.delete();
         this.commentHolder = commentHolder;
     }
@@ -122,9 +132,21 @@ public class InformationHolder {
     }
 
     public void setAuthorHolder(Hologram authorHolder) {
-        if(this.authorHolder != null)
+        if (this.authorHolder != null)
             this.authorHolder.delete();
         this.authorHolder = authorHolder;
+    }
+
+    public Chest getImageChest() {
+        if (!(imageChest.getBlock() instanceof Chest))
+            return null;
+        return imageChest;
+    }
+
+    public void setImageChest(Chest imageChest) {
+        if (this.imageChest != null)
+            this.imageChest.setType(Material.AIR);
+        this.imageChest = imageChest;
     }
 
     public int getId() {

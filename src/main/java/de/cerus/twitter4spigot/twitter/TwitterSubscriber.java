@@ -24,13 +24,24 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import de.cerus.ceruslib.item.ItemBuilder;
+import de.cerus.twitter4spigot.config.GeneralConfig;
+import de.cerus.twitter4spigot.maprenderer.ImageRenderer;
 import de.cerus.twitter4spigot.util.SkullValueUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
+import twitter4j.MediaEntity;
 import twitter4j.Query;
 import twitter4j.Status;
 import twitter4j.TwitterException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +59,7 @@ public class TwitterSubscriber {
         this.informationHolders = informationHolders;
     }
 
-    public void update(TwitterBot twitterBot, JavaPlugin plugin) {
+    public void update(TwitterBot twitterBot, JavaPlugin plugin, GeneralConfig config) {
         try {
             if (twitterBot.getTwitter().getRateLimitStatus().values().stream().anyMatch(status -> status.getRemaining() == 0)) {
                 return;
@@ -68,7 +79,7 @@ public class TwitterSubscriber {
                     query.setCount(1);
                     query.setResultType(Query.ResultType.recent);
                     List<Status> tweets = twitterBot.getTwitter().search(query).getTweets();
-                    if(tweets.isEmpty()) return;
+                    if (tweets.isEmpty()) return;
                     status = tweets.get(0);
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -82,7 +93,7 @@ public class TwitterSubscriber {
                     query.setCount(1);
                     query.setResultType(Query.ResultType.popular);
                     List<Status> tweets = twitterBot.getTwitter().search(query).getTweets();
-                    if(tweets.isEmpty()) return;
+                    if (tweets.isEmpty()) return;
                     status = tweets.get(0);
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -95,7 +106,7 @@ public class TwitterSubscriber {
                 query.setResultType(Query.ResultType.recent);
                 try {
                     List<Status> tweets = twitterBot.getTwitter().search(query).getTweets();
-                    if(tweets.isEmpty()) return;
+                    if (tweets.isEmpty()) return;
                     status = tweets.get(tweets.size() - 1);
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -108,7 +119,7 @@ public class TwitterSubscriber {
                 query.setResultType(Query.ResultType.popular);
                 try {
                     List<Status> tweets = twitterBot.getTwitter().search(query).getTweets();
-                    if(tweets.isEmpty()) return;
+                    if (tweets.isEmpty()) return;
                     status = tweets.get(tweets.size() - 1);
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -119,13 +130,26 @@ public class TwitterSubscriber {
                 return;
         }
 
-        String tweet = status.getText();
+        String originalTweet = status.getText();
+        StringBuilder tweetBuilder = new StringBuilder();
+        for (String line : originalTweet.split(" ")) {
+            if (config.isLinkFormatting() && (line.startsWith("http://") || line.startsWith("https://")))
+                line = ChatColor.translateAlternateColorCodes('&', config.getLinkFormat()) + line;
+            if (config.isHashtagFormatting() && line.startsWith("#"))
+                line = ChatColor.translateAlternateColorCodes('&', config.getHashtagFormat()) + line;
+            if (config.isMentionFormatting() && line.startsWith("@"))
+                line = ChatColor.translateAlternateColorCodes('&', config.getMentionFormat()) + line;
+            tweetBuilder.append(line).append(" ");
+        }
+        String tweet = tweetBuilder.toString();
+
         List<String> lines = new ArrayList<>();
         if (tweet.length() > 30) {
             int index = 0;
             while (tweet.length() > index) {
-                int endIndex = tweet.length() < index + 30 ? tweet.length() : index + 30;
-                lines.add(tweet.substring(index, endIndex));
+                int endIndex = Math.min(tweet.length(), index + 30);
+                String line = tweet.substring(index, endIndex);
+                lines.add(line);
                 index += 30;
             }
         } else lines.add(tweet);
@@ -140,7 +164,8 @@ public class TwitterSubscriber {
                 for (InformationHolder informationHolder : informationHolders) {
                     Hologram commentHolder = informationHolder.getCommentHolder();
                     if (commentHolder == null) continue;
-                    commentHolder.getLine(1).removeLine();
+                    if (commentHolder.size() == 2)
+                        commentHolder.getLine(1).removeLine();
                     if (comments == -1) {
                         commentHolder.appendTextLine("§cFailed to load tweet");
                     } else if (comments == -2) {
@@ -149,6 +174,38 @@ public class TwitterSubscriber {
                         commentHolder.appendTextLine(comments + " Comments");
                 }
             });
+        }).start();
+
+        new Thread(() -> {
+            if (config.useImageChests() && status.getMediaEntities() != null && status.getMediaEntities().length > 0) {
+                List<BufferedImage> images = new ArrayList<>();
+                MediaEntity[] mediaEntities = status.getMediaEntities();
+                for (MediaEntity mediaEntity : mediaEntities) {
+                    if (mediaEntity.getType().equals("photo")) {
+                        try {
+                            images.add(ImageIO.read(new java.net.URL(mediaEntity.getMediaURLHttps())));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                for (InformationHolder informationHolder : informationHolders) {
+                    if (informationHolder.getImageChest() != null && config.useImageChests()) {
+                        Chest chest = informationHolder.getImageChest();
+                        chest.getBlockInventory().clear();
+
+                        for (BufferedImage image : images) {
+                            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                                MapView map = Bukkit.createMap(chest.getWorld());
+                                map.getRenderers().forEach(map::removeRenderer);
+                                map.addRenderer(new ImageRenderer(image));
+                                chest.getBlockInventory().addItem(new ItemStack(Material.MAP, 1, map.getId()));
+                            });
+                        }
+                    }
+                }
+            }
         }).start();
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {

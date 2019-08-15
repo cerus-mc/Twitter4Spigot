@@ -20,6 +20,7 @@
 
 package de.cerus.twitter4spigot.twitter;
 
+import de.cerus.twitter4spigot.config.GeneralConfig;
 import de.cerus.twitter4spigot.storage.SubscriberStorage;
 import de.cerus.twitter4spigot.util.SkullValueUtil;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,17 +37,15 @@ public class SubscriberController {
         this.subscriberStorage = subscriberStorage;
     }
 
-    public void startLoop(JavaPlugin plugin) {
+    public void startLoop(JavaPlugin plugin, GeneralConfig config) {
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             if(!SkullValueUtil.hasDefaults()) {
                 System.out.println("Loop rejected (hasDefaults=false)");
                 return;
             }
 
-            subscriberStorage.getSubscribers().forEach(subscriber -> subscriber.update(twitterBot, plugin));
-
-            System.out.println("Loop done");
-        }, 30*20, 2*60*20);
+            subscriberStorage.getSubscribers().forEach(subscriber -> subscriber.update(twitterBot, plugin, config));
+        }, 60*20, 2*60*20);
     }
 
     public void addSubscriber(TwitterSubscriber subscriber) {
