@@ -27,7 +27,7 @@ import java.io.File;
 
 public class GeneralConfig extends Config {
 
-    private boolean useMetrics, useImageChests, linkFormatting, hashtagFormatting, mentionFormatting;
+    private boolean useMetrics, useImageChests, linkFormatting, hashtagFormatting, mentionFormatting, valueMode;
     private String twitterConsumerKey, twitterConsumerSecret, twitterAccessToken, twitterAccessSecret, skullTextureTweet,
             skullTextureLikes, skullTextureRetweets, skullTextureComments, linkFormat, hashtagFormat, mentionFormat;
 
@@ -47,6 +47,7 @@ public class GeneralConfig extends Config {
         twitterConsumerSecret = configuration.getString("twitter-consumer-secret");
         twitterAccessToken = configuration.getString("twitter-access-token");
         twitterAccessSecret = configuration.getString("twitter-access-secret");
+        valueMode = configuration.getBoolean("skull-textures.value-mode");
         skullTextureTweet = configuration.getString("skull-textures.tweet");
         skullTextureLikes = configuration.getString("skull-textures.like");
         skullTextureRetweets = configuration.getString("skull-textures.retweet");
@@ -94,6 +95,10 @@ public class GeneralConfig extends Config {
             configuration.set("formatting.hashtags.format", "&9");
             configuration.set("formatting.mentions.enable", true);
             configuration.set("formatting.mentions.format", "&b&n");
+            hasChanged = true;
+        }
+        if(!configuration.contains("skull-textures.value-mode")) {
+            configuration.set("skull-textures.tweet", false);
             hasChanged = true;
         }
         if (hasChanged)
@@ -162,5 +167,9 @@ public class GeneralConfig extends Config {
 
     public String getMentionFormat() {
         return mentionFormat;
+    }
+
+    public boolean isValueMode() {
+        return valueMode;
     }
 }

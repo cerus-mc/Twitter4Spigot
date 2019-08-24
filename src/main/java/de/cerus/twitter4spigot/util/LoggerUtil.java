@@ -20,12 +20,30 @@
 
 package de.cerus.twitter4spigot.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class LoggerUtil {
+
+    private static File logFile = new File("plugins/Twitter4Spigot/t4s-log.log");
+
+    static {
+        logFile.getParentFile().mkdirs();
+        if (!logFile.exists()) {
+            try {
+                logFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private LoggerUtil() {
         throw new UnsupportedOperationException();
@@ -34,25 +52,28 @@ public class LoggerUtil {
     public static void disable() {
         java.util.logging.Logger logger = Logger.getLogger("org.apache.http.conn.util");
         logger.setLevel(Level.OFF);
-        logger.addHandler(new ConsoleHandler() {
+/*        logger.addHandler(new ConsoleHandler() {
             @Override
             public void publish(LogRecord record) {
-                if (record.getMessage().contains("Failure loading public suffix list from default resource"))
-                    return;
-                super.publish(record);
+                log(record);
             }
-        });
+        });*/
 
         logger = Logger.getLogger("com.gargoylesoftware");
         logger.setLevel(Level.OFF);
-        logger.addHandler(new ConsoleHandler() {
+/*        logger.addHandler(new ConsoleHandler() {
             @Override
             public void publish(LogRecord record) {
-                if (record.getMessage().contains("Failure loading public suffix list from default resource"))
-                    return;
-                super.publish(record);
+                log(record);
             }
-        });
+        });*/
     }
 
+    private static void log(LogRecord record) {
+        try {
+            Files.write(logFile.toPath(), Collections.singletonList(record.getMessage()), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

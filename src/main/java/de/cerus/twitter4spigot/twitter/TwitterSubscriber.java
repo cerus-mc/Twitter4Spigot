@@ -134,17 +134,18 @@ public class TwitterSubscriber {
         StringBuilder tweetBuilder = new StringBuilder();
         for (String line : originalTweet.split(" ")) {
             if (config.isLinkFormatting() && (line.startsWith("http://") || line.startsWith("https://")))
-                line = ChatColor.translateAlternateColorCodes('&', config.getLinkFormat()) + line;
+                line = ChatColor.translateAlternateColorCodes('&', config.getLinkFormat()) + line + "§r";
             if (config.isHashtagFormatting() && line.startsWith("#"))
-                line = ChatColor.translateAlternateColorCodes('&', config.getHashtagFormat()) + line;
+                line = ChatColor.translateAlternateColorCodes('&', config.getHashtagFormat()) + line + "§r";
             if (config.isMentionFormatting() && line.startsWith("@"))
-                line = ChatColor.translateAlternateColorCodes('&', config.getMentionFormat()) + line;
+                line = ChatColor.translateAlternateColorCodes('&', config.getMentionFormat()) + line + "§r";
             tweetBuilder.append(line).append(" ");
         }
         String tweet = tweetBuilder.toString();
+        String strippedTweet = ChatColor.stripColor(tweet);
 
         List<String> lines = new ArrayList<>();
-        if (tweet.length() > 30) {
+        if (strippedTweet.length() > 30) {
             int index = 0;
             while (tweet.length() > index) {
                 int endIndex = Math.min(tweet.length(), index + 30);
