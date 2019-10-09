@@ -52,6 +52,11 @@ public class SkullValueUtil {
         client.getOptions().setThrowExceptionOnFailingStatusCode(false);
     }
 
+    public static boolean loadValueWithoutLink(String name, String value) {
+        values.put(name, value);
+        return true;
+    }
+
     public static boolean loadValue(String name, String link) {
         if (!link.matches("https://minecraft-heads.com/custom-heads/.*/.*")) return false;
         try {
@@ -101,23 +106,29 @@ public class SkullValueUtil {
     }
 
     public static void loadDefaults(GeneralConfig generalConfig) {
+        boolean valueMode = generalConfig.isValueMode();
+
         System.out.println("Attempting to load 'Tweet' texture...");
-        boolean success = loadValue("tweet", generalConfig.getSkullTextureTweet());
+        boolean success = valueMode ? loadValueWithoutLink("tweet", generalConfig.getSkullTextureTweet()) :
+                loadValue("tweet", generalConfig.getSkullTextureTweet());
         if (success) System.out.println("Success!");
         else System.out.println("Failed to load texture (is the link valid?)");
 
         System.out.println("Attempting to load 'Like' texture...");
-        success = loadValue("like", generalConfig.getSkullTextureLikes());
+        success = valueMode ? loadValueWithoutLink("like", generalConfig.getSkullTextureLikes()) :
+                loadValue("like", generalConfig.getSkullTextureLikes());
         if (success) System.out.println("Success!");
         else System.out.println("Failed to load texture (is the link valid?)");
 
         System.out.println("Attempting to load 'Retweet' texture...");
-        success = loadValue("retweet", generalConfig.getSkullTextureRetweets());
+        success = valueMode ? loadValueWithoutLink("retweet", generalConfig.getSkullTextureRetweets()) :
+                loadValue("retweet", generalConfig.getSkullTextureRetweets());
         if (success) System.out.println("Success!");
         else System.out.println("Failed to load texture (is the link valid?)");
 
         System.out.println("Attempting to load 'Comments' texture...");
-        success = loadValue("comments", generalConfig.getSkullTextureComments());
+        success = valueMode ? loadValueWithoutLink("comments", generalConfig.getSkullTextureComments()) :
+                loadValue("comments", generalConfig.getSkullTextureComments());
         if (success) System.out.println("Success!");
         else System.out.println("Failed to load texture (is the link valid?)");
     }
