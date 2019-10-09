@@ -25,11 +25,13 @@ import de.cerus.twitter4spigot.bstats.MetricsUtil;
 import de.cerus.twitter4spigot.commands.T4SCommand;
 import de.cerus.twitter4spigot.config.GeneralConfig;
 import de.cerus.twitter4spigot.dependencies.DependencyRetriever;
+import de.cerus.twitter4spigot.license.LicenseData;
 import de.cerus.twitter4spigot.storage.SubscriberStorage;
 import de.cerus.twitter4spigot.twitter.SubscriberController;
 import de.cerus.twitter4spigot.twitter.TwitterBot;
 import de.cerus.twitter4spigot.util.SkullValueUtil;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 
@@ -44,6 +46,15 @@ public class Twitter4Spigot extends CerusPlugin {
             System.out.println("Failed to retrieve dependencies");
             return;
         }
+
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                LicenseData.fetchUserName();
+            } catch (IOException e) {
+                System.out.println("Failed to fetch user name! (" + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
+            }
+            System.out.println("Fetched license data: " + LicenseData.toJson());
+        });
 
         GeneralConfig generalConfig = new GeneralConfig(this);
         generalConfig.initialize();

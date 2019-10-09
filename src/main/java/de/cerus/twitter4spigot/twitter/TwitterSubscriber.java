@@ -144,6 +144,19 @@ public class TwitterSubscriber {
         String tweet = tweetBuilder.toString();
         String strippedTweet = ChatColor.stripColor(tweet);
 
+        List<String> links = new ArrayList<>();
+        for (String s : originalTweet.split("\\s+")) {
+            if (s.startsWith("http://") || s.startsWith("https://"))
+                links.add(s);
+        }
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            informationHolders.forEach(informationHolder -> {
+                informationHolder.updateLinks(links);
+                informationHolder.updateListener();
+            });
+        });
+
         List<String> lines = new ArrayList<>();
         if (strippedTweet.length() > 30) {
             int index = 0;

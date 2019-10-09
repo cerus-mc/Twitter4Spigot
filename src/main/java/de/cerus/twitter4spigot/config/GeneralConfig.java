@@ -98,7 +98,7 @@ public class GeneralConfig extends Config {
             hasChanged = true;
         }
         if(!configuration.contains("skull-textures.value-mode")) {
-            configuration.set("skull-textures.tweet", false);
+            configuration.set("skull-textures.value-mode", false);
             hasChanged = true;
         }
         if (hasChanged)

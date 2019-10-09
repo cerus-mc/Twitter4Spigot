@@ -22,12 +22,20 @@ package de.cerus.twitter4spigot.twitter;
 
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import com.gmail.filoghost.holographicdisplays.api.handler.TouchHandler;
+import com.gmail.filoghost.holographicdisplays.api.line.HologramLine;
+import com.gmail.filoghost.holographicdisplays.api.line.TouchableLine;
 import com.google.gson.JsonObject;
 import de.cerus.twitter4spigot.Twitter4Spigot;
 import de.cerus.twitter4spigot.util.JsonUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 // Represents armorstands holding text
 public class InformationHolder {
@@ -40,6 +48,8 @@ public class InformationHolder {
     private Hologram authorHolder;
     private Chest imageChest;
 
+    private List<String> links = new ArrayList<>();
+
     public InformationHolder(int id, Hologram tweetHolder, Hologram likeHolder, Hologram retweetHolder, Hologram commentHolder, Hologram authorHolder, Chest imageChest) {
         this.id = id;
         this.tweetHolder = tweetHolder;
@@ -48,6 +58,35 @@ public class InformationHolder {
         this.commentHolder = commentHolder;
         this.authorHolder = authorHolder;
         this.imageChest = imageChest;
+    }
+
+    public void updateListener() {
+        for (int i = 0; i < tweetHolder.size(); i++) {
+            HologramLine line = tweetHolder.getLine(i);
+            if (line instanceof TouchableLine) {
+                TouchableLine touchableLine = (TouchableLine) line;
+                touchableLine.setTouchHandler(getTouchHandler());
+            }
+        }
+    }
+
+    private TouchHandler getTouchHandler() {
+        return new TouchHandler() {
+            @Override
+            public void onTouch(Player player) {
+                if (links.isEmpty()) return;
+                player.sendMessage("§7§lLinks:");
+                links.stream().map(s -> "§8- §b§n" + s).forEach(player::sendMessage);
+            }
+        };
+    }
+
+    public void updateLinks(String... links) {
+        updateLinks(Arrays.asList(links));
+    }
+
+    public void updateLinks(List<String> links) {
+        this.links = links;
     }
 
     public JsonObject toJson() {
