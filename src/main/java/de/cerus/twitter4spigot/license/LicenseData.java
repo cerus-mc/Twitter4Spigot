@@ -20,6 +20,8 @@
 
 package de.cerus.twitter4spigot.license;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -34,6 +36,7 @@ public class LicenseData {
     private static String resourceId = "%%__RESOURCE__%%";
     private static String nonce = "%%__NONCE__%%";
     private static String userName = "Unknown";
+    private static String gift = "Unknown";
 
     private LicenseData() {
         throw new UnsupportedOperationException();
@@ -47,15 +50,25 @@ public class LicenseData {
         connection.setRequestMethod("GET");
         connection.setDoInput(true);
 
-        StringBuilder contentBuilder = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
-/*            String s;
-            while ((s = reader.readLine()) != null)
-                contentBuilder.append(s);*/
-
-        JsonObject object = new JsonParser().parse(/*contentBuilder.toString()*/reader).getAsJsonObject();
+        JsonObject object = new JsonParser().parse(reader).getAsJsonObject();
         userName = object.get("name").getAsString();
+    }
+
+    public static void fetchGiftStatus() throws IOException {
+        if (getUserId().equals("Unknown")) return;
+
+        HttpURLConnection connection = (HttpURLConnection) new java.net.URL("http://cerus-dev.de/spigot/t4s-gifts.json" + getUserId()).openConnection();
+        connection.setRequestProperty("User-Agent", "T4S-Plugin");
+        connection.setRequestMethod("GET");
+        connection.setDoInput(true);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+        JsonObject object = new JsonParser().parse(reader).getAsJsonObject();
+        JsonArray array = object.get("gifted").getAsJsonArray();
+        gift = array.contains(new Gson().toJsonTree(getUserId())) ? "Yes" : "No";
     }
 
     public static String getUserId() {
@@ -75,6 +88,10 @@ public class LicenseData {
 
     public static String getUserName() {
         return userName;
+    }
+
+    public static String getGift() {
+        return gift;
     }
 
     public static String toJson() {

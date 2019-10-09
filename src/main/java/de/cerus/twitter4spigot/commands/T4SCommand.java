@@ -24,6 +24,7 @@ import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import de.cerus.ceruslib.commandframework.Arguments;
 import de.cerus.ceruslib.commandframework.Command;
+import de.cerus.twitter4spigot.license.LicenseData;
 import de.cerus.twitter4spigot.twitter.InformationHolder;
 import de.cerus.twitter4spigot.twitter.SubscriberController;
 import de.cerus.twitter4spigot.twitter.TwitterSubscriber;
@@ -54,7 +55,22 @@ public class T4SCommand extends Command {
 
     @Override
     public boolean onPlayerCommand(Player player, org.bukkit.command.Command command, String s, Arguments arguments) {
-        if(!checkPermission(player, "t4s.use"))
+        if (arguments.size() == 1) {
+            if (arguments.get(0).equalsIgnoreCase("license")) {
+                player.sendMessage("§8§m-------------------------------------------------------------");
+                player.sendMessage("§3§lL§b§license");
+                player.sendMessage("§eUser-ID: §7" + LicenseData.getUserId());
+                player.sendMessage("§eUser-Name: §7" + LicenseData.getUserName());
+                player.sendMessage("§eResource-ID: §7" + LicenseData.getResourceId());
+                player.sendMessage("§eUnique-ID: §7" + LicenseData.getNonce());
+                player.sendMessage("§6Is gift? §d" + LicenseData.getGift());
+                player.sendMessage("§8§o" + LicenseData.toJson());
+                player.sendMessage("§8§m-------------------------------------------------------------");
+                return true;
+            }
+        }
+
+        if (!checkPermission(player, "t4s.use"))
             return true;
 
         if (arguments.size() == 2) {
@@ -198,58 +214,58 @@ public class T4SCommand extends Command {
 
                     InformationHolder holder = subscriber.getInformationHolders().stream()
                             .filter(informationHolder -> informationHolder.getId() == ihId).findAny().orElse(null);
-                    if(holder == null) {
+                    if (holder == null) {
                         player.sendMessage(getPrefix() + "§cInvalid information holder id!");
                         return true;
                     }
 
-                    if(arguments.get(5).equalsIgnoreCase("setTweetHolo")) {
+                    if (arguments.get(5).equalsIgnoreCase("setTweetHolo")) {
                         Hologram hologram = HologramsAPI.createHologram(getPlugin(), player.getLocation());
                         hologram.appendTextLine("Tweet holder");
                         holder.setTweetHolder(hologram);
                         subscriberController.save();
-                        player.sendMessage(getPrefix()+"§aTweet hologram set!");
+                        player.sendMessage(getPrefix() + "§aTweet hologram set!");
                         return true;
                     }
-                    if(arguments.get(5).equalsIgnoreCase("setLikeHolo")) {
+                    if (arguments.get(5).equalsIgnoreCase("setLikeHolo")) {
                         Hologram hologram = HologramsAPI.createHologram(getPlugin(), player.getLocation());
                         hologram.appendTextLine("Like holder");
                         holder.setLikeHolder(hologram);
                         subscriberController.save();
-                        player.sendMessage(getPrefix()+"§aLike hologram set!");
+                        player.sendMessage(getPrefix() + "§aLike hologram set!");
                         return true;
                     }
-                    if(arguments.get(5).equalsIgnoreCase("setRetweetHolo")) {
+                    if (arguments.get(5).equalsIgnoreCase("setRetweetHolo")) {
                         Hologram hologram = HologramsAPI.createHologram(getPlugin(), player.getLocation());
                         hologram.appendTextLine("Retweet holder");
                         holder.setRetweetHolder(hologram);
                         subscriberController.save();
-                        player.sendMessage(getPrefix()+"§aRetweet hologram set!");
+                        player.sendMessage(getPrefix() + "§aRetweet hologram set!");
                         return true;
                     }
-                    if(arguments.get(5).equalsIgnoreCase("setCommentHolo")) {
+                    if (arguments.get(5).equalsIgnoreCase("setCommentHolo")) {
                         Hologram hologram = HologramsAPI.createHologram(getPlugin(), player.getLocation());
                         hologram.appendTextLine("Comment holder");
                         holder.setCommentHolder(hologram);
                         subscriberController.save();
-                        player.sendMessage(getPrefix()+"§aComment hologram set!");
+                        player.sendMessage(getPrefix() + "§aComment hologram set!");
                         return true;
                     }
-                    if(arguments.get(5).equalsIgnoreCase("setAuthorHolo")) {
+                    if (arguments.get(5).equalsIgnoreCase("setAuthorHolo")) {
                         Hologram hologram = HologramsAPI.createHologram(getPlugin(), player.getLocation());
                         hologram.appendTextLine("Author holder");
                         holder.setAuthorHolder(hologram);
                         subscriberController.save();
-                        player.sendMessage(getPrefix()+"§aAuthor hologram set!");
+                        player.sendMessage(getPrefix() + "§aAuthor hologram set!");
                         return true;
                     }
-                    if(arguments.get(5).equalsIgnoreCase("setImageChest")) {
+                    if (arguments.get(5).equalsIgnoreCase("setImageChest")) {
                         Block block = player.getLocation().getBlock();
                         block.setType(Material.CHEST);
                         getPlugin().getServer().getScheduler().runTaskLater(getPlugin(), () -> {
                             holder.setImageChest((Chest) block.getState());
                             subscriberController.save();
-                            player.sendMessage(getPrefix()+"§aImage chest set!");
+                            player.sendMessage(getPrefix() + "§aImage chest set!");
                         }, 3);
                         return true;
                     }
@@ -269,6 +285,7 @@ public class T4SCommand extends Command {
         player.sendMessage("§8§m-------------------------------------------------------------");
         player.sendMessage("§3§lT§b§lwitter §3§lF§b§lor §3§lS§b§lpigot §7v" + getPlugin().getDescription().getVersion());
         player.sendMessage(" ");
+        player.sendMessage("§e/t4s license");
         player.sendMessage("§e/t4s subscriber list");
         player.sendMessage("§e/t4s subscriber add <Mode> <Tag>");
         player.sendMessage("§e/t4s subscriber remove <Sub. Id>");
